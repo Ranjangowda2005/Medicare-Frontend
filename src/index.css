@@ -1,0 +1,41 @@
+/* ============================================================
+   Global Stylesheet
+   ------------------------------------------------------------
+   Tailwind CSS v4 is imported here. In v4 you do NOT need a
+   tailwind.config.js file — the plugin in vite.config.js scans
+   your source files automatically.
+
+   @import "tailwindcss";  ->  brings in all Tailwind utilities
+   @theme  ->  lets you define custom design tokens (colors,
+               fonts, etc.) that become new utility classes.
+   ============================================================ */
+
+/* Import Tailwind CSS v4 */
+@import "tailwindcss";
+
+/* Define custom theme values (optional but nice for branding) */
+@theme {
+  /* Custom font used by `font-sans` utility */
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* Smooth scrolling & base body styling for the whole app */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
