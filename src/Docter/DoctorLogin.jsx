@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { CalendarCheck, LockKeyhole, Mail, User } from 'lucide-react';
-
+import { CalendarCheck, LockKeyhole, Mail, User } from "lucide-react";
 
 const DoctorLogin = () => {
   const navigate = useNavigate();
@@ -34,7 +33,7 @@ const DoctorLogin = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:5000/api/doctor/login",
+        "https://medicare-backend-hajh.onrender.com/api/doctor/login",
         formData,
       );
 
@@ -58,7 +57,7 @@ const DoctorLogin = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-cyan-950 flex items-center justify-center p-5">
       <div className="absolute top-0 left-0 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl"></div>
@@ -99,19 +98,25 @@ const DoctorLogin = () => {
 
               <div className="grid grid-cols-3 gap-4 mt-10">
                 <div className="bg-white/10 border border-white/10 rounded-2xl p-4">
-                  <div className="text-2xl"><CalendarCheck/></div>
+                  <div className="text-2xl">
+                    <CalendarCheck />
+                  </div>
 
                   <p className="text-sm font-semibold mt-3">Appointments</p>
                 </div>
 
                 <div className="bg-white/10 border border-white/10 rounded-2xl p-4">
-                  <div className="text-2xl"><User /></div>
+                  <div className="text-2xl">
+                    <User />
+                  </div>
 
                   <p className="text-sm font-semibold mt-3">Patients</p>
                 </div>
 
                 <div className="bg-white/10 border border-white/10 rounded-2xl p-4">
-                  <div className="text-2xl"><LockKeyhole /></div>
+                  <div className="text-2xl">
+                    <LockKeyhole />
+                  </div>
 
                   <p className="text-sm font-semibold mt-3">Secure</p>
                 </div>
@@ -247,7 +252,7 @@ const DoctorLogin = () => {
               <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
                 <div className="flex gap-4">
                   <div className="w-11 h-11 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
-                    <LockKeyhole/>
+                    <LockKeyhole />
                   </div>
 
                   <div>

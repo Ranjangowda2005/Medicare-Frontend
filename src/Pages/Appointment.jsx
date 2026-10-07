@@ -55,7 +55,7 @@ const Appointment = () => {
     const totalMinutes = hours * 60 + minutes;
 
     const morningStart = 9 * 60; // 09:00
-    const morningEnd = 13 * 60 + 15;//1:30
+    const morningEnd = 13 * 60 + 15; //1:30
 
     const eveningStart = 15 * 60; // 15:00
     const eveningEnd = 18 * 60; // 18:00
@@ -108,7 +108,7 @@ const Appointment = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:5000/api/appointment",
+        "https://medicare-backend-hajh.onrender.com/api/appointment",
         formData,
         {
           headers: {

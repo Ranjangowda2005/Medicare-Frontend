@@ -51,7 +51,7 @@ const DoctorPatients = () => {
 
       // Fetch all appointments
       const response = await axios.get(
-        "http://localhost:5000/api/appointments",
+        "https://medicare-backend-hajh.onrender.com/api/appointments",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -340,7 +340,6 @@ const DoctorPatients = () => {
 
               <span>Diseases</span>
             </NavLink>
-
 
             {/* CONTACT MESSAGES */}
 

@@ -12,7 +12,7 @@ const DiseaseDetails = () => {
   const fetchDisease = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/disease/${id}`,
+        `https://medicare-backend-hajh.onrender.com/api/disease/${id}`,
       );
 
       if (response.data.success) {

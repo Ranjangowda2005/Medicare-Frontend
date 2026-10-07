@@ -43,7 +43,7 @@ const DoctorDashboard = () => {
       setLoading(true);
 
       const response = await axios.get(
-        "http://localhost:5000/api/appointments",
+        "https://medicare-backend-hajh.onrender.com/api/appointments",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -117,7 +117,7 @@ const DoctorDashboard = () => {
       setUpdatingId(id);
 
       const response = await axios.put(
-        `http://localhost:5000/api/appointment/${id}/status`,
+        `https://medicare-backend-hajh.onrender.com/api/appointment/${id}/status`,
         {
           status,
         },

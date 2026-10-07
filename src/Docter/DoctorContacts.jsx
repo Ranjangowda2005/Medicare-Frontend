@@ -50,7 +50,7 @@ const DoctorContacts = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:5000/api/contact/get",
+        "https://medicare-backend-hajh.onrender.com/api/contact/get",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -188,7 +188,7 @@ const DoctorContacts = () => {
       const token = localStorage.getItem("doctorToken");
 
       await axios.put(
-        `http://localhost:5000/api/contact/${contact._id}/read`,
+        `https://medicare-backend-hajh.onrender.com/api/contact/${contact._id}/read`,
         {},
         {
           headers: {
@@ -234,11 +234,14 @@ const DoctorContacts = () => {
     try {
       const token = localStorage.getItem("doctorToken");
 
-      await axios.delete(`http://localhost:5000/api/contact/${contactId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await axios.delete(
+        `https://medicare-backend-hajh.onrender.com/api/contact/${contactId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       setContacts((previousContacts) =>
         previousContacts.filter((contact) => contact._id !== contactId),

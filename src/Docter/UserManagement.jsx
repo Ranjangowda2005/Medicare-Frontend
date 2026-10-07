@@ -36,11 +36,14 @@ const UserManagement = () => {
 
       setLoading(true);
 
-      const response = await axios.get("http://localhost:5000/api/all-users", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.get(
+        "https://medicare-backend-hajh.onrender.com/api/all-users",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (response.data.success) {
         setUsers(response.data.users || []);
@@ -91,8 +94,8 @@ const UserManagement = () => {
 
       const endpoint =
         status === "Blocked"
-          ? `http://localhost:5000/api/block-user/${userId}`
-          : `http://localhost:5000/api/unblock-user/${userId}`;
+          ? `https://medicare-backend-hajh.onrender.com/api/block-user/${userId}`
+          : `https://medicare-backend-hajh.onrender.com/api/unblock-user/${userId}`;
 
       const response = await axios.put(
         endpoint,

@@ -65,7 +65,7 @@ const Services = () => {
     const fetchDoctorRating = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/doctor-rating",
+          "https://medicare-backend-hajh.onrender.com/api/doctor-rating",
         );
 
         if (response.data.success) {
@@ -214,9 +214,7 @@ const Services = () => {
                   {/* RATING */}
                   <div className="bg-white rounded-2xl p-6 shadow-sm">
                     <p className="text-3xl font-bold text-yellow-500">
-                      {doctorRating > 0
-                        ? `${doctorRating.toFixed(1)}`
-                        : "0.0"}
+                      {doctorRating > 0 ? `${doctorRating.toFixed(1)}` : "0.0"}
                     </p>
 
                     <p className="text-gray-500 mt-2">

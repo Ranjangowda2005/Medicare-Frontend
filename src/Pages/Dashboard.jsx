@@ -29,7 +29,7 @@ const Dashboard = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:5000/api/my-appointments",
+        "https://medicare-backend-hajh.onrender.com/api/my-appointments",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -58,7 +58,7 @@ const Dashboard = () => {
   const fetchDoctorRating = useCallback(async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/doctor-rating",
+        "https://medicare-backend-hajh.onrender.com/api/doctor-rating",
       );
 
       if (response.data.success) {
@@ -75,7 +75,7 @@ const Dashboard = () => {
       if (!token) return;
 
       const response = await axios.get(
-        "http://localhost:5000/api/my-feedbacks",
+        "https://medicare-backend-hajh.onrender.com/api/my-feedbacks",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -193,7 +193,7 @@ const Dashboard = () => {
       setSubmittingFeedback(appointmentId);
 
       const response = await axios.post(
-        "http://localhost:5000/api/feedback",
+        "https://medicare-backend-hajh.onrender.com/api/feedback",
         {
           appointmentId: appointmentId,
           rating: Number(selectedRating),

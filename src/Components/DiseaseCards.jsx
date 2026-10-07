@@ -10,7 +10,9 @@ const DiseaseCards = () => {
 
   const fetchDiseases = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/diseases");
+      const response = await axios.get(
+        "https://medicare-backend-hajh.onrender.com/api/diseases",
+      );
 
       console.log("Disease API Response:", response.data);
 

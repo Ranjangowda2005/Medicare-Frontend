@@ -82,7 +82,7 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* DESKTOP NAVIGATION */}
+        {/* DESKTOP NAVIGATclION */}
         <nav className="hidden items-center gap-7 lg:flex">
           <NavLink to="/" className={navLinkClass}>
             Home
@@ -370,7 +370,7 @@ const Navbar = () => {
                   <div className="h-12 w-12 overflow-hidden rounded-xl border-2 border-blue-100 bg-blue-100">
                     {user?.image ? (
                       <img
-                        src={`http://localhost:5000/uploads/${user.image}`}
+                        src={`https://medicare-backend-hajh.onrender.com/uploads/${user.image}`}
                         alt="Profile"
                         className="h-full w-full object-cover"
                       />
