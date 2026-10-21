@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import doctorImage from "../assets/doctor.jpg";
-import diseaseIcon from "../assets/virus.png";
-import logo from "../assets/logo.png";
+import DoctorSidebar from "../Components/DoctorSidebar";
 
 const DoctorDisease = () => {
   const navigate = useNavigate();
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     shortDescription: "",
@@ -25,19 +25,12 @@ const DoctorDisease = () => {
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
-
   const [count, setCount] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const token = localStorage.getItem("doctorToken");
 
-  const handleLogout = () => {
-    localStorage.removeItem("doctorToken");
-    localStorage.removeItem("doctor");
-
-    navigate("/doctor/login", { replace: true });
-  };
-
+  // Fetch appointments and diseases
   useEffect(() => {
     if (!token) {
       navigate("/doctor/login");
@@ -51,7 +44,7 @@ const DoctorDisease = () => {
   const fetchPendingAppointments = async () => {
     try {
       const response = await axios.get(
-        "https://medicare-backend-hajh.onrender.com/api/appointments?page=1&limit=10",
+        "http://localhost:5000/api/appointments?page=1&limit=10",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -61,7 +54,6 @@ const DoctorDisease = () => {
 
       if (response.data.success) {
         const appointments = response.data.appointments || [];
-
         const pending = appointments.filter(
           (appointment) =>
             !appointment.status || appointment.status === "Pending",
@@ -75,21 +67,20 @@ const DoctorDisease = () => {
       if (error.response?.status === 401) {
         localStorage.removeItem("doctorToken");
         localStorage.removeItem("doctor");
-
         navigate("/doctor/login", { replace: true });
       }
     }
   };
 
+  // Fetch diseases with pagination
   const fetchDiseases = async (page = count) => {
     try {
       const response = await axios.get(
-        `https://medicare-backend-hajh.onrender.com/api/diseases?page=${page}&limit=1`,
+        `http://localhost:5000/api/diseases?page=${page}&limit=1`,
       );
 
       if (response.data.success) {
         setDiseases(response.data.diseases || []);
-
         setTotalPages(response.data.totalPages || 1);
       }
     } catch (error) {
@@ -101,7 +92,6 @@ const DoctorDisease = () => {
   const handleDecrement = () => {
     if (count > 1) {
       const newPage = count - 1;
-
       setCount(newPage);
       fetchDiseases(newPage);
     }
@@ -110,12 +100,12 @@ const DoctorDisease = () => {
   const handleIncrement = () => {
     if (count < totalPages) {
       const newPage = count + 1;
-
       setCount(newPage);
       fetchDiseases(newPage);
     }
   };
 
+  // Form and image handling
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -128,9 +118,7 @@ const DoctorDisease = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     setImage(file);
     setImagePreview(URL.createObjectURL(file));
@@ -194,18 +182,17 @@ const DoctorDisease = () => {
     });
   };
 
+  // Delete disease
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this disease?",
     );
 
-    if (!confirmDelete) {
-      return;
-    }
+    if (!confirmDelete) return;
 
     try {
       const response = await axios.delete(
-        `https://medicare-backend-hajh.onrender.com/api/disease/${id}`,
+        `http://localhost:5000/api/disease/${id}`,
       );
 
       if (response.data.success) {
@@ -222,11 +209,11 @@ const DoctorDisease = () => {
       }
     } catch (error) {
       console.log("Delete Disease Error:", error);
-
       alert(error.response?.data?.message || "Unable to delete disease");
     }
   };
 
+  // Add or update disease
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -271,14 +258,11 @@ const DoctorDisease = () => {
 
       if (editingId) {
         response = await axios.put(
-          `https://medicare-backend-hajh.onrender.com/api/disease/${editingId}`,
+          `http://localhost:5000/api/disease/${editingId}`,
           data,
         );
       } else {
-        response = await axios.post(
-          "https://medicare-backend-hajh.onrender.com/api/disease",
-          data,
-        );
+        response = await axios.post("http://localhost:5000/api/disease", data);
       }
 
       if (response.data.success) {
@@ -310,186 +294,77 @@ const DoctorDisease = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <aside className="w-72 bg-[#020617] fixed left-0 top-0 bottom-0 hidden lg:flex flex-col z-50">
-        <div className="p-7 border-b border-slate-800">
-          <Link to="/doctor/dashboard" className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center overflow-hidden p-1">
-              <img
-                src={logo}
-                alt="MediCare Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
+    <div className="min-h-screen bg-slate-50 flex w-full overflow-x-hidden">
+      {/* Reusable Sidebar */}
+      <DoctorSidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
-            <div>
-              <h1 className="text-xl font-bold text-white">MediCare</h1>
-
-              <p className="text-xs text-slate-400">Doctor Administration</p>
-            </div>
-          </Link>
-        </div>
-
-        <div className="px-4 mt-8">
-          <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider px-2 mb-4">
-            Main Menu
-          </p>
-
-          <nav className="space-y-2">
-            <NavLink
-              to="/doctor/dashboard"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
+      <main className="flex-1 min-w-0 w-full lg:ml-72">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-10 py-4 sm:py-5">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 transition shrink-0"
+              aria-label="Open sidebar"
+              aria-expanded={sidebarOpen}
             >
-              <span className="text-xl w-6 text-center">⌂</span>
-              <span>Dashboard</span>
-            </NavLink>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 6h16" />
+                <path d="M4 12h16" />
+                <path d="M4 18h16" />
+              </svg>
+            </button>
 
-            <NavLink
-              to="/doctor/patients"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">♙</span>
-
-              <span>Patients</span>
-            </NavLink>
-
-            {/* USER MANAGEMENT */}
-
-            <NavLink
-              to="/doctor/users"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">♟</span>
-
-              <span>User Management</span>
-            </NavLink>
-
-            <NavLink
-              to="/doctor/diseases"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center flex items-center justify-center">
-                <img
-                  src={diseaseIcon}
-                  alt="Disease"
-                  className="w-5 h-5 object-contain"
-                />
-              </span>
-
-              <span>Diseases</span>
-            </NavLink>
-
-            {/* CONTACT MESSAGES */}
-
-            <NavLink
-              to="/doctor/contacts"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">✉</span>
-
-              <span>Contact Messages</span>
-            </NavLink>
-
-            <NavLink
-              to="/doctor/profile"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">◉</span>
-
-              <span>Profile</span>
-            </NavLink>
-          </nav>
-        </div>
-
-        <div className="mt-auto px-4 pb-8">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-slate-300 hover:text-red-400 hover:bg-white/5 transition"
-          >
-            <span className="text-xl w-6 text-center">⇥</span>
-
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      <main className="flex-1 lg:ml-72">
-        <header className="bg-white border-b border-slate-200 px-6 lg:px-10 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Doctor Administration</p>
-
-              <h1 className="text-2xl font-bold text-slate-800 mt-1">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500">
+                Doctor Administration
+              </p>
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-800 mt-1">
                 Disease Information
               </h1>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-200">
-                <div className="w-11 h-11 rounded-xl overflow-hidden">
-                  <img
-                    src={doctorImage}
-                    alt="Doctor"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    Dr.Joseph
-                  </p>
-
-                  <p className="text-xs text-gray-500">Administrator</p>
-                </div>
+            <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-200">
+              <div className="w-11 h-11 rounded-xl overflow-hidden">
+                <img
+                  src={doctorImage}
+                  alt="Doctor"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">
+                  Dr.Joseph
+                </p>
+                <p className="text-xs text-gray-500">Administrator</p>
               </div>
             </div>
           </div>
         </header>
 
-        <div className="p-6 lg:p-10">
+        {/* Page Content */}
+        <div className="p-3 sm:p-6 lg:p-10 min-w-0">
           <section className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <span className="text-blue-600 text-xs font-bold uppercase tracking-widest">
                 Medical Information
               </span>
 
-              <h2 className="text-3xl font-bold text-slate-800 mt-2">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mt-2">
                 Diseases
               </h2>
 
@@ -500,34 +375,33 @@ const DoctorDisease = () => {
 
             {!showForm && (
               <button
+                type="button"
                 onClick={handleAddDisease}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+                className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition"
               >
                 + Add Disease
               </button>
             )}
           </section>
 
+          {/* Disease List */}
           {!showForm && (
-            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="p-7 border-b border-slate-100">
-                <h2 className="text-2xl font-bold text-slate-800">
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-w-0">
+              <div className="p-4 sm:p-7 border-b border-slate-100">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
                   Existing Diseases
                 </h2>
-
                 <p className="text-gray-500 mt-2">
                   View and manage all disease information.
                 </p>
               </div>
 
               {diseases.length === 0 ? (
-                <div className="text-center py-20">
+                <div className="text-center py-16 sm:py-20 px-4">
                   <div className="text-5xl">🩺</div>
-
                   <h3 className="text-xl font-bold text-slate-800 mt-5">
                     No Diseases Found
                   </h3>
-
                   <p className="text-gray-500 mt-2">
                     Add your first disease information.
                   </p>
@@ -537,9 +411,9 @@ const DoctorDisease = () => {
                   {diseases.map((disease) => (
                     <div
                       key={disease._id}
-                      className="p-7 flex flex-col md:flex-row gap-6"
+                      className="p-4 sm:p-7 flex flex-col md:flex-row gap-5 sm:gap-6"
                     >
-                      <div className="w-32 h-32 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0">
+                      <div className="w-full h-48 sm:w-40 sm:h-40 md:w-32 md:h-32 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
                         <img
                           src={`https://res.cloudinary.com/djmsizzc/image/upload/${disease.image}`}
                           alt={disease.title}
@@ -547,12 +421,12 @@ const DoctorDisease = () => {
                         />
                       </div>
 
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-slate-800">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xl font-bold text-slate-800 break-words">
                           {disease.title}
                         </h3>
 
-                        <p className="text-gray-500 mt-2">
+                        <p className="text-gray-500 mt-2 break-words">
                           {disease.shortDescription}
                         </p>
 
@@ -563,17 +437,19 @@ const DoctorDisease = () => {
                             : "—"}
                         </p>
 
-                        <div className="flex gap-3 mt-5">
+                        <div className="flex flex-col sm:flex-row gap-3 mt-5">
                           <button
+                            type="button"
                             onClick={() => handleEdit(disease)}
-                            className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition"
+                            className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition"
                           >
                             Update
                           </button>
 
                           <button
+                            type="button"
                             onClick={() => handleDelete(disease._id)}
-                            className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition"
+                            className="w-full sm:w-auto px-5 py-2.5 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition"
                           >
                             Delete
                           </button>
@@ -583,11 +459,15 @@ const DoctorDisease = () => {
                   ))}
                 </div>
               )}
-              <div className="w-full flex items-center justify-center gap-2 mt-8">
+
+              {/* Pagination */}
+              <div className="w-full flex items-center justify-center gap-2 py-6 px-4 border-t border-slate-100">
                 <button
+                  type="button"
                   className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
                   onClick={handleDecrement}
                   disabled={count === 1}
+                  aria-label="Previous disease"
                 >
                   ←
                 </button>
@@ -597,9 +477,11 @@ const DoctorDisease = () => {
                 </div>
 
                 <button
+                  type="button"
                   className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
                   onClick={handleIncrement}
                   disabled={count >= totalPages}
+                  aria-label="Next disease"
                 >
                   →
                 </button>
@@ -607,13 +489,13 @@ const DoctorDisease = () => {
             </section>
           )}
 
+          {/* Add / Update Disease Form */}
           {showForm && (
-            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 lg:p-8">
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 lg:p-8 min-w-0">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
                   {editingId ? "Update Disease" : "Add Disease"}
                 </h2>
-
                 <p className="text-gray-500 mt-2">
                   {editingId
                     ? "Update the disease information."
@@ -623,12 +505,15 @@ const DoctorDisease = () => {
 
               <form onSubmit={handleSubmit}>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  <label
+                    htmlFor="diseaseImage"
+                    className="block text-sm font-semibold text-slate-700 mb-3"
+                  >
                     Disease Image
                   </label>
 
                   <div className="flex flex-col md:flex-row gap-6 items-start">
-                    <div className="w-40 h-40 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+                    <div className="w-40 h-40 shrink-0 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
                       {imagePreview ? (
                         <img
                           src={imagePreview}
@@ -638,7 +523,6 @@ const DoctorDisease = () => {
                       ) : (
                         <div className="text-center">
                           <div className="text-4xl">🖼️</div>
-
                           <p className="text-xs text-gray-400 mt-2">
                             Image Preview
                           </p>
@@ -646,18 +530,13 @@ const DoctorDisease = () => {
                       )}
                     </div>
 
-                    <div>
+                    <div className="w-full min-w-0">
                       <input
                         id="diseaseImage"
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
-                        className="block w-full text-sm text-gray-500 
-                        file:mr-4 file:py-3 file:px-5 
-                        file:rounded-xl file:border-0 
-                        file:text-sm file:font-semibold 
-                        file:bg-blue-50 file:text-blue-700 
-                        hover:file:bg-blue-100"
+                        className="block w-full max-w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
 
                       <p className="text-xs text-gray-400 mt-3">
@@ -670,107 +549,128 @@ const DoctorDisease = () => {
                 </div>
 
                 <div className="mt-8">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Disease Name
                   </label>
-
                   <input
+                    id="title"
                     type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
                     placeholder="Example: Cancer"
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div className="mt-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    htmlFor="shortDescription"
+                    className="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Short Description
                   </label>
-
                   <textarea
+                    id="shortDescription"
                     name="shortDescription"
                     value={formData.shortDescription}
                     onChange={handleChange}
-                    rows="3"
+                    rows={3}
                     placeholder="Enter a short description of the disease..."
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
 
                 <div className="mt-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    htmlFor="overview"
+                    className="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Complete Description
                   </label>
-
                   <textarea
+                    id="overview"
                     name="overview"
                     value={formData.overview}
                     onChange={handleChange}
-                    rows="6"
+                    rows={6}
                     placeholder="Enter complete information about the disease..."
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
 
                 <div className="mt-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    htmlFor="symptoms"
+                    className="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Symptoms
                   </label>
-
                   <textarea
+                    id="symptoms"
                     name="symptoms"
                     value={formData.symptoms}
                     onChange={handleChange}
-                    rows="5"
+                    rows={5}
                     placeholder="Enter symptoms..."
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
 
                 <div className="mt-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    htmlFor="causes"
+                    className="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Causes
                   </label>
-
                   <textarea
+                    id="causes"
                     name="causes"
                     value={formData.causes}
                     onChange={handleChange}
-                    rows="5"
+                    rows={5}
                     placeholder="Enter causes..."
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
 
                 <div className="mt-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    htmlFor="prevention"
+                    className="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Prevention
                   </label>
-
                   <textarea
+                    id="prevention"
                     name="prevention"
                     value={formData.prevention}
                     onChange={handleChange}
-                    rows="5"
+                    rows={5}
                     placeholder="Enter prevention methods..."
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
 
                 <div className="mt-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label
+                    htmlFor="treatment"
+                    className="block text-sm font-semibold text-slate-700 mb-2"
+                  >
                     Treatment
                   </label>
-
                   <textarea
+                    id="treatment"
                     name="treatment"
                     value={formData.treatment}
                     onChange={handleChange}
-                    rows="5"
+                    rows={5}
                     placeholder="Enter treatment options..."
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
 
@@ -795,7 +695,7 @@ const DoctorDisease = () => {
                       clearForm();
                       setShowForm(false);
                     }}
-                    className="sm:w-40 border border-slate-300 text-slate-700 py-3.5 rounded-xl font-semibold hover:bg-slate-50 transition"
+                    className="w-full sm:w-40 border border-slate-300 text-slate-700 py-3.5 rounded-xl font-semibold hover:bg-slate-50 transition"
                   >
                     Cancel
                   </button>

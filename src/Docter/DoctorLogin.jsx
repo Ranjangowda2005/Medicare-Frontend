@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CalendarCheck, LockKeyhole, Mail, User } from "lucide-react";
+import logo from "../assets/logo.png";
 
 const DoctorLogin = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const DoctorLogin = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "https://medicare-backend-hajh.onrender.com/api/doctor/login",
+        "http://localhost:5000/api/doctor/login",
         formData,
       );
 
@@ -68,14 +69,17 @@ const DoctorLogin = () => {
         <div className="grid lg:grid-cols-2">
           <div className="hidden lg:flex relative bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 text-white p-12 flex-col justify-between min-h-[680px]">
             <div>
-              <Link to="/" className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/15 border border-white/20 rounded-2xl flex items-center justify-center text-2xl">
-                  🏥
+              <Link to="" className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden p-1">
+                  <img
+                    src={logo}
+                    alt="MediCare Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
 
                 <div>
                   <h1 className="text-2xl font-bold">MediCare</h1>
-
                   <p className="text-blue-100 text-xs">Healthcare Platform</p>
                 </div>
               </Link>
@@ -131,9 +135,13 @@ const DoctorLogin = () => {
           <div className="p-7 sm:p-10 lg:p-14 flex items-center">
             <div className="w-full max-w-md mx-auto">
               <div className="lg:hidden mb-10">
-                <Link to="/" className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl">
-                    🏥
+                <Link to="" className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white text-white rounded-2xl flex items-center justify-center text-2xl">
+                    <img
+                    src={logo}
+                    alt="MediCare Logo"
+                    className="w-full h-full object-contain"
+                     />
                   </div>
 
                   <div>
@@ -187,13 +195,6 @@ const DoctorLogin = () => {
                     <label className="text-sm font-semibold text-slate-700">
                       Password
                     </label>
-
-                    <button
-                      type="button"
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                    >
-                      Forgot Password?
-                    </button>
                   </div>
 
                   <div className="relative">
@@ -218,18 +219,6 @@ const DoctorLogin = () => {
                       {showPassword ? "◉" : "○"}
                     </button>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    className="w-4 h-4 accent-blue-600"
-                  />
-
-                  <label htmlFor="remember" className="text-sm text-gray-500">
-                    Remember me
-                  </label>
                 </div>
 
                 <button

@@ -65,7 +65,7 @@ const Services = () => {
     const fetchDoctorRating = async () => {
       try {
         const response = await axios.get(
-          "https://medicare-backend-hajh.onrender.com/api/doctor-rating",
+          "http://localhost:5000/api/doctor-rating",
         );
 
         if (response.data.success) {

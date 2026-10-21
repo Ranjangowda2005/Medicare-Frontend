@@ -1,36 +1,25 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
 import doctorImage from "../assets/doctor.jpg";
-import logo from "../assets/logo.png";
-import diseaseIcon from "../assets/virus.png";
+import DoctorSidebar from "../Components/DoctorSidebar";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [count, setCount] = useState(1);
   const [totalAppointments, setTotalAppointments] = useState(0);
   const [allAppointments, setAllAppointments] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
-
   const [statusFilter, setStatusFilter] = useState("All");
   const [monthFilter, setMonthFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
 
   const appointmentsPerPage = 10;
 
-  // LOGOUT
-  const handleLogout = () => {
-    localStorage.removeItem("doctorToken");
-    localStorage.removeItem("doctor");
-
-    navigate("/doctor/login", { replace: true });
-  };
-
-  // FETCH APPOINTMENTS
+  // Fetch appointments
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem("doctorToken");
@@ -43,7 +32,7 @@ const DoctorDashboard = () => {
       setLoading(true);
 
       const response = await axios.get(
-        "https://medicare-backend-hajh.onrender.com/api/appointments",
+        "http://localhost:5000/api/appointments",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,7 +46,6 @@ const DoctorDashboard = () => {
 
       if (response.data.success) {
         const allData = response.data.appointments || [];
-
         setAllAppointments(allData);
         setTotalAppointments(allData.length);
       }
@@ -66,10 +54,8 @@ const DoctorDashboard = () => {
 
       if (error.response?.status === 401 || error.response?.status === 403) {
         alert("Doctor login expired. Please login again.");
-
         localStorage.removeItem("doctorToken");
         localStorage.removeItem("doctor");
-
         navigate("/doctor/login", { replace: true });
         return;
       }
@@ -80,7 +66,7 @@ const DoctorDashboard = () => {
     }
   };
 
-  // FETCH ON LOAD
+  // Load and refresh appointments
   useEffect(() => {
     const token = localStorage.getItem("doctorToken");
 
@@ -90,10 +76,7 @@ const DoctorDashboard = () => {
     }
 
     fetchAppointments();
-  }, []);
 
-  // FETCH EVERY 5 MINUTES
-  useEffect(() => {
     const interval = setInterval(
       () => {
         fetchAppointments();
@@ -104,7 +87,7 @@ const DoctorDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // UPDATE APPOINTMENT STATUS
+  // Update appointment status
   const updateAppointmentStatus = async (id, status) => {
     try {
       const token = localStorage.getItem("doctorToken");
@@ -117,10 +100,8 @@ const DoctorDashboard = () => {
       setUpdatingId(id);
 
       const response = await axios.put(
-        `https://medicare-backend-hajh.onrender.com/api/appointment/${id}/status`,
-        {
-          status,
-        },
+        `http://localhost:5000/api/appointment/${id}/status`,
+        { status },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -146,10 +127,8 @@ const DoctorDashboard = () => {
 
       if (error.response?.status === 401 || error.response?.status === 403) {
         alert("Doctor login expired. Please login again.");
-
         localStorage.removeItem("doctorToken");
         localStorage.removeItem("doctor");
-
         navigate("/doctor/login", { replace: true });
         return;
       }
@@ -160,22 +139,19 @@ const DoctorDashboard = () => {
     }
   };
 
-  // ACCEPT
   const handleAccept = (id) => {
     updateAppointmentStatus(id, "Accepted");
   };
 
-  // DECLINE
   const handleDecline = (id) => {
     updateAppointmentStatus(id, "Declined");
   };
 
-  // COMPLETE
   const handleComplete = (id) => {
     updateAppointmentStatus(id, "Completed");
   };
 
-  // APPOINTMENT STATISTICS
+  // Appointment statistics
   const pendingAppointments = allAppointments.filter(
     (appointment) => !appointment.status || appointment.status === "Pending",
   );
@@ -188,13 +164,13 @@ const DoctorDashboard = () => {
     (appointment) => appointment.status === "Declined",
   );
 
-  const CompletedAppointments = allAppointments.filter(
+  const completedAppointments = allAppointments.filter(
     (appointment) => appointment.status === "Completed",
   );
 
   const pendingCount = pendingAppointments.length;
 
-  // FILTER ALL APPOINTMENTS BEFORE PAGINATION
+  // Filter appointments
   const filteredAllAppointments = allAppointments.filter((appointment) => {
     const appointmentStatus = appointment.status || "Pending";
 
@@ -221,7 +197,6 @@ const DoctorDashboard = () => {
     return statusMatch && monthMatch && yearMatch;
   });
 
-  // AVAILABLE YEARS
   const availableYears = [
     ...new Set(
       allAppointments
@@ -239,7 +214,7 @@ const DoctorDashboard = () => {
     ),
   ].sort((a, b) => b - a);
 
-  // PAGINATION
+  // Pagination
   const totalPages = Math.max(
     1,
     Math.ceil(filteredAllAppointments.length / appointmentsPerPage),
@@ -253,259 +228,129 @@ const DoctorDashboard = () => {
     endIndex,
   );
 
-  // RESET PAGE WHEN FILTERS CHANGE
   useEffect(() => {
     setCount(1);
   }, [statusFilter, monthFilter, yearFilter]);
 
-  // KEEP PAGE NUMBER VALID
   useEffect(() => {
     if (count > totalPages) {
       setCount(totalPages);
     }
   }, [count, totalPages]);
 
-  // PAGINATION BUTTONS
   const handleIncrement = () => {
-    setCount((prevCount) =>
-      prevCount < totalPages ? prevCount + 1 : prevCount,
+    setCount((previousCount) =>
+      previousCount < totalPages ? previousCount + 1 : previousCount,
     );
   };
 
   const handleDecrement = () => {
-    setCount((prevCount) => (prevCount > 1 ? prevCount - 1 : 1));
+    setCount((previousCount) => (previousCount > 1 ? previousCount - 1 : 1));
+  };
+
+  const getStatusClass = (status) => {
+    if (status === "Accepted") {
+      return "bg-green-100 text-green-700";
+    }
+
+    if (status === "Declined") {
+      return "bg-red-100 text-red-700";
+    }
+
+    if (status === "Completed") {
+      return "bg-blue-100 text-blue-700";
+    }
+
+    return "bg-orange-100 text-orange-700";
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
-      {/* SIDEBAR */}
-      <aside className="w-72 bg-[#020617] fixed left-0 top-0 bottom-0 hidden lg:flex flex-col z-50">
-        {/* LOGO */}
-        <div className="p-7 border-b border-slate-800">
-          <Link to="/doctor/dashboard" className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center overflow-hidden p-1">
-              <img
-                src={logo}
-                alt="MediCare Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
+    <div className="min-h-screen bg-slate-100 flex w-full overflow-x-hidden">
+      {/* Reusable Sidebar */}
+      <DoctorSidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
-            <div>
-              <h1 className="text-xl font-bold text-white">MediCare</h1>
-
-              <p className="text-xs text-slate-400">Doctor Administration</p>
-            </div>
-          </Link>
-        </div>
-
-        {/* MENU */}
-        <div className="px-4 mt-8">
-          <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider px-2 mb-4">
-            Main Menu
-          </p>
-
-          <nav className="space-y-2">
-            {/* DASHBOARD */}
-            <NavLink
-              to="/doctor/dashboard"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
+      <main className="flex-1 min-w-0 w-full lg:ml-72">
+        {/* Header */}
+        <header className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-10 py-4 sm:py-5">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200 transition shrink-0"
+              aria-label="Open sidebar"
+              aria-expanded={sidebarOpen}
             >
-              <span className="text-xl w-6 text-center">⌂</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 6h16" />
+                <path d="M4 12h16" />
+                <path d="M4 18h16" />
+              </svg>
+            </button>
 
-              <span>Dashboard</span>
-            </NavLink>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500">
+                Doctor Administration
+              </p>
 
-            {/* APPOINTMENTS */}
-            {/*
-            <NavLink
-              to="/doctor/appointment"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">
-                ▣
-              </span>
-
-              <span>Appointments</span>
-
-              {pendingCount > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                  {pendingCount}
-                </span>
-              )}
-            </NavLink>
-            */}
-
-            {/* PATIENTS */}
-            <NavLink
-              to="/doctor/patients"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">♙</span>
-
-              <span>Patients</span>
-            </NavLink>
-
-            {/* USER MANAGEMENT */}
-            <NavLink
-              to="/doctor/users"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">♟</span>
-
-              <span>User Management</span>
-            </NavLink>
-
-            {/* DISEASES */}
-            <NavLink
-              to="/doctor/diseases"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center flex items-center justify-center">
-                <img
-                  src={diseaseIcon}
-                  alt="Disease"
-                  className="w-5 h-5 object-contain brightness-0 invert"
-                />
-              </span>
-
-              <span>Diseases</span>
-            </NavLink>
-
-            {/* CONTACT MESSAGES */}
-
-            <NavLink
-              to="/doctor/contacts"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">✉</span>
-
-              <span>Contact Messages</span>
-            </NavLink>
-
-            {/* PROFILE */}
-            <NavLink
-              to="/doctor/profile"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-4 px-5 py-4 rounded-xl transition ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "text-slate-300 hover:bg-slate-800"
-                }`
-              }
-            >
-              <span className="text-xl w-6 text-center">◉</span>
-
-              <span>Profile</span>
-            </NavLink>
-          </nav>
-        </div>
-
-        {/* LOGOUT */}
-        <div className="mt-auto px-4 pb-8">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-slate-300 hover:text-red-400 hover:bg-white/5 transition"
-          >
-            <span className="text-xl w-6 text-center">⇥</span>
-
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* MAIN */}
-      <main className="flex-1 lg:ml-72">
-        {/* HEADER */}
-        <header className="bg-white border-b border-slate-200 px-6 lg:px-10 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Doctor Administration</p>
-
-              <h1 className="text-2xl font-bold text-slate-800 mt-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-slate-800 mt-1">
                 Welcome, Dr.Joseph
               </h1>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-200">
-                <div className="w-11 h-11 rounded-xl overflow-hidden">
-                  <img
-                    src={doctorImage}
-                    alt="Doctor"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-200">
+              <div className="w-11 h-11 rounded-xl overflow-hidden">
+                <img
+                  src={doctorImage}
+                  alt="Doctor"
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    Dr.Joseph
-                  </p>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">
+                  Dr.Joseph
+                </p>
 
-                  <p className="text-xs text-gray-500">Administrator</p>
-                </div>
+                <p className="text-xs text-gray-500">Administrator</p>
               </div>
             </div>
           </div>
         </header>
 
-        {/* CONTENT */}
-        <div className="p-6 lg:p-10">
-          {/* HERO */}
-          <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-500 rounded-[2rem] p-7 lg:p-10 text-white shadow-xl">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-              <div>
+        {/* Dashboard Content */}
+        <div className="p-3 sm:p-6 lg:p-10 min-w-0">
+          {/* Hero */}
+          <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-500 rounded-[2rem] p-5 sm:p-7 lg:p-10 text-white shadow-xl">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 lg:gap-8">
+              <div className="min-w-0">
                 <span className="inline-block bg-white/15 border border-white/20 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-widest">
                   Doctor Dashboard
                 </span>
 
-                <h2 className="text-3xl lg:text-4xl font-bold mt-5">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mt-5">
                   Welcome back, Dr.Joseph
                 </h2>
 
-                <p className="text-blue-100 leading-7 mt-3 max-w-2xl">
+                <p className="text-blue-100 leading-7 mt-3 max-w-2xl text-sm sm:text-base">
                   Manage your appointments, review patient requests, and keep
                   track of your healthcare activities.
                 </p>
               </div>
 
-              <div className="bg-white/10 border border-white/20 rounded-2xl p-5 min-w-[180px]">
+              <div className="bg-white/10 border border-white/20 rounded-2xl p-5 lg:min-w-[180px]">
                 <p className="text-blue-100 text-sm">New Requests</p>
 
                 <p className="text-4xl font-bold mt-2">{pendingCount}</p>
@@ -517,10 +362,9 @@ const DoctorDashboard = () => {
             </div>
           </section>
 
-          {/* STATISTICS */}
-          <section className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5 mt-8">
-            {/* TOTAL */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          {/* Statistics */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-5 mt-8">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
               <p className="text-gray-500 text-sm">Total Appointments</p>
 
               <h3 className="text-3xl font-bold text-slate-800 mt-2">
@@ -528,8 +372,7 @@ const DoctorDashboard = () => {
               </h3>
             </div>
 
-            {/* PENDING */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
               <p className="text-gray-500 text-sm">Pending</p>
 
               <h3 className="text-3xl font-bold text-orange-500 mt-2">
@@ -537,8 +380,7 @@ const DoctorDashboard = () => {
               </h3>
             </div>
 
-            {/* ACCEPTED */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
               <p className="text-gray-500 text-sm">Accepted</p>
 
               <h3 className="text-3xl font-bold text-green-600 mt-2">
@@ -546,8 +388,7 @@ const DoctorDashboard = () => {
               </h3>
             </div>
 
-            {/* DECLINED */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
               <p className="text-gray-500 text-sm">Declined</p>
 
               <h3 className="text-3xl font-bold text-red-500 mt-2">
@@ -555,44 +396,44 @@ const DoctorDashboard = () => {
               </h3>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
               <p className="text-gray-500 text-sm">Completed</p>
 
               <h3 className="text-3xl font-bold text-sky-500 mt-2">
-                {CompletedAppointments.length}
+                {completedAppointments.length}
               </h3>
             </div>
           </section>
 
-          {/* APPOINTMENTS */}
-          <section className="mt-10">
+          {/* Appointments */}
+          <section className="mt-8 sm:mt-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
+              <div className="min-w-0">
                 <span className="text-blue-600 text-xs font-bold uppercase tracking-widest">
                   Appointment Requests
                 </span>
 
-                <h2 className="text-2xl font-bold text-slate-800 mt-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
                   All Patient Appointments
                 </h2>
 
-                <p className="text-gray-500 mt-1">
+                <p className="text-gray-500 mt-1 text-sm sm:text-base">
                   View complete appointment details and manage patient requests.
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={fetchAppointments}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold transition shadow-md"
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold transition shadow-md"
               >
                 Refresh
               </button>
             </div>
 
-            {/* FILTERS */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mt-6">
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* STATUS */}
+            {/* Filters */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Appointment Status
@@ -601,7 +442,7 @@ const DoctorDashboard = () => {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="All">All Appointments</option>
                     <option value="Pending">Pending</option>
@@ -611,7 +452,6 @@ const DoctorDashboard = () => {
                   </select>
                 </div>
 
-                {/* MONTH */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Month
@@ -620,7 +460,7 @@ const DoctorDashboard = () => {
                   <select
                     value={monthFilter}
                     onChange={(e) => setMonthFilter(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">All Months</option>
                     <option value="1">January</option>
@@ -638,7 +478,6 @@ const DoctorDashboard = () => {
                   </select>
                 </div>
 
-                {/* YEAR */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Year
@@ -647,7 +486,7 @@ const DoctorDashboard = () => {
                   <select
                     value={yearFilter}
                     onChange={(e) => setYearFilter(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full min-w-0 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">All Years</option>
 
@@ -660,11 +499,11 @@ const DoctorDashboard = () => {
                 </div>
               </div>
 
-              {/* CLEAR FILTER */}
               {(statusFilter !== "All" ||
                 monthFilter !== "" ||
                 yearFilter !== "") && (
                 <button
+                  type="button"
                   onClick={() => {
                     setStatusFilter("All");
                     setMonthFilter("");
@@ -677,15 +516,15 @@ const DoctorDashboard = () => {
               )}
             </div>
 
-            {/* APPOINTMENT CONTENT */}
+            {/* Appointment List */}
             {loading ? (
-              <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-10 mt-6 text-center">
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 sm:p-10 mt-6 text-center">
                 <div className="text-4xl animate-pulse">📅</div>
 
                 <p className="text-gray-500 mt-4">Loading appointments...</p>
               </div>
             ) : filteredAppointments.length === 0 ? (
-              <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-10 mt-6 text-center">
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 sm:p-10 mt-6 text-center">
                 <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl mx-auto">
                   📅
                 </div>
@@ -703,121 +542,111 @@ const DoctorDashboard = () => {
                 {filteredAppointments.map((appointment) => (
                   <div
                     key={appointment._id}
-                    className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition"
+                    className="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6 hover:shadow-lg transition min-w-0"
                   >
-                    {/* PATIENT HEADER */}
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-                      <div className="flex gap-4">
-                        {/* PATIENT IMAGE */}
-                        <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+                    {/* Patient Header */}
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5 lg:gap-6">
+                      <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shrink-0 overflow-hidden">
                           {appointment.userId?.image ? (
                             <img
                               src={`https://res.cloudinary.com/djmsizzc/image/upload/${appointment.userId.image}`}
                               alt="Patient"
-                              className="w-14 h-14 rounded-2xl object-cover"
+                              className="w-full h-full object-cover"
                             />
                           ) : (
                             "👤"
                           )}
                         </div>
 
-                        {/* PATIENT INFO */}
-                        <div>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <h3 className="text-xl font-bold text-slate-800">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <h3 className="text-lg sm:text-xl font-bold text-slate-800 break-words">
                               {appointment.userId?.name ||
                                 appointment.name ||
                                 "Patient"}
                             </h3>
 
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                appointment.status === "Accepted"
-                                  ? "bg-green-100 text-green-700"
-                                  : appointment.status === "Declined"
-                                    ? "bg-red-100 text-red-700"
-                                    : appointment.status === "Completed"
-                                      ? "bg-blue-100 text-blue-700"
-                                      : "bg-orange-100 text-orange-700"
-                              }`}
+                              className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusClass(
+                                appointment.status,
+                              )}`}
                             >
                               {appointment.status || "Pending"}
                             </span>
                           </div>
 
-                          <p className="text-gray-500 mt-1">
+                          <p className="text-gray-500 mt-1 text-sm sm:text-base break-all">
                             {appointment.userId?.email || "Patient appointment"}
                           </p>
                         </div>
                       </div>
 
-                      {/* DATE AND TIME */}
+                      {/* Date and Time */}
                       <div className="flex flex-wrap gap-3">
-                        <div className="bg-blue-50 rounded-xl px-4 py-3">
+                        <div className="bg-blue-50 rounded-xl px-4 py-3 flex-1 sm:flex-none min-w-0">
                           <p className="text-xs text-gray-500">Date</p>
 
-                          <p className="font-semibold text-blue-700 mt-1">
+                          <p className="font-semibold text-blue-700 mt-1 break-words">
                             {appointment.date}
                           </p>
                         </div>
 
-                        <div className="bg-cyan-50 rounded-xl px-4 py-3">
+                        <div className="bg-cyan-50 rounded-xl px-4 py-3 flex-1 sm:flex-none min-w-0">
                           <p className="text-xs text-gray-500">Time</p>
 
-                          <p className="font-semibold text-cyan-700 mt-1">
+                          <p className="font-semibold text-cyan-700 mt-1 break-words">
                             {appointment.time}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* COMPLETE DETAILS */}
-                    <div className="grid md:grid-cols-2 gap-4 mt-6">
-                      {/* CONTACT */}
-                      <div className="bg-slate-50 rounded-2xl p-4">
+                    {/* Appointment Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                      <div className="bg-slate-50 rounded-2xl p-4 min-w-0">
                         <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
                           Contact
                         </p>
 
-                        <p className="text-slate-700 font-medium mt-2">
+                        <p className="text-slate-700 font-medium mt-2 break-all">
                           {appointment.contact || "Not provided"}
                         </p>
                       </div>
 
-                      {/* EMAIL */}
-                      <div className="bg-slate-50 rounded-2xl p-4">
+                      <div className="bg-slate-50 rounded-2xl p-4 min-w-0">
                         <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
                           Email
                         </p>
 
-                        <p className="text-slate-700 font-medium mt-2">
+                        <p className="text-slate-700 font-medium mt-2 break-all">
                           {appointment.userId?.email ||
                             appointment.email ||
                             "Not provided"}
                         </p>
                       </div>
 
-                      {/* DESCRIPTION */}
-                      <div className="bg-slate-50 rounded-2xl p-4 md:col-span-2">
+                      <div className="bg-slate-50 rounded-2xl p-4 md:col-span-2 min-w-0">
                         <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
                           Patient Description
                         </p>
 
-                        <p className="text-slate-700 mt-2 leading-6">
+                        <p className="text-slate-700 mt-2 leading-6 whitespace-pre-wrap break-words">
                           {appointment.description ||
                             "No description provided."}
                         </p>
                       </div>
                     </div>
 
-                    {/* ACCEPT AND DECLINE */}
+                    {/* Pending Appointment Actions */}
                     {(!appointment.status ||
                       appointment.status === "Pending") && (
                       <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-5 border-t border-slate-100">
                         <button
+                          type="button"
                           onClick={() => handleAccept(appointment._id)}
                           disabled={updatingId === appointment._id}
-                          className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white py-3 rounded-xl font-semibold transition shadow-sm"
+                          className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white py-3 px-3 rounded-xl font-semibold transition shadow-sm"
                         >
                           {updatingId === appointment._id
                             ? "Updating..."
@@ -825,9 +654,10 @@ const DoctorDashboard = () => {
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => handleDecline(appointment._id)}
                           disabled={updatingId === appointment._id}
-                          className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white py-3 rounded-xl font-semibold transition shadow-sm"
+                          className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white py-3 px-3 rounded-xl font-semibold transition shadow-sm"
                         >
                           {updatingId === appointment._id
                             ? "Updating..."
@@ -836,17 +666,18 @@ const DoctorDashboard = () => {
                       </div>
                     )}
 
-                    {/* ACCEPTED */}
+                    {/* Accepted Appointment */}
                     {appointment.status === "Accepted" && (
-                      <div className="mt-5 bg-green-50 border border-green-100 rounded-xl px-5 py-4">
+                      <div className="mt-5 bg-green-50 border border-green-100 rounded-xl px-4 sm:px-5 py-4">
                         <p className="text-green-700 font-semibold">
                           ✓ This appointment has been accepted.
                         </p>
 
                         <button
+                          type="button"
                           onClick={() => handleComplete(appointment._id)}
                           disabled={updatingId === appointment._id}
-                          className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white py-3 rounded-xl font-semibold transition shadow-sm"
+                          className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white py-3 px-3 rounded-xl font-semibold transition shadow-sm"
                         >
                           {updatingId === appointment._id
                             ? "Updating..."
@@ -855,28 +686,25 @@ const DoctorDashboard = () => {
                       </div>
                     )}
 
-                    {/* DECLINED */}
+                    {/* Declined Appointment */}
                     {appointment.status === "Declined" && (
-                      <div className="mt-5 bg-red-50 border border-red-100 rounded-xl px-5 py-4">
+                      <div className="mt-5 bg-red-50 border border-red-100 rounded-xl px-4 sm:px-5 py-4">
                         <p className="text-red-700 font-semibold">
                           ✕ This appointment has been declined.
                         </p>
                       </div>
                     )}
 
-                    {/* COMPLETED */}
-                    {/* COMPLETED */}
+                    {/* Completed Appointment and Feedback */}
                     {appointment.status === "Completed" && (
                       <>
-                        {/* PATIENT FEEDBACK */}
                         {appointment.feedback && (
-                          <div className="mt-5 bg-slate-50 rounded-2xl p-4 md:col-span-2">
+                          <div className="mt-5 bg-slate-50 rounded-2xl p-4 min-w-0">
                             <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
                               Patient Feedback
                             </p>
 
-                            {/* RATING */}
-                            <div className="flex items-center gap-1 mt-2">
+                            <div className="flex flex-wrap items-center gap-1 mt-2">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <span
                                   key={star}
@@ -895,17 +723,15 @@ const DoctorDashboard = () => {
                               </span>
                             </div>
 
-                            {/* COMMENT */}
                             {appointment.feedback.comment && (
-                              <p className="text-slate-700 mt-2 leading-6">
+                              <p className="text-slate-700 mt-2 leading-6 whitespace-pre-wrap break-words">
                                 {appointment.feedback.comment}
                               </p>
                             )}
                           </div>
                         )}
 
-                        {/* COMPLETED MESSAGE */}
-                        <div className="mt-5 bg-blue-50 border border-blue-100 rounded-xl px-5 py-4">
+                        <div className="mt-5 bg-blue-50 border border-blue-100 rounded-xl px-4 sm:px-5 py-4">
                           <p className="text-blue-700 font-semibold">
                             ✓ This appointment has been completed.
                           </p>
@@ -917,13 +743,15 @@ const DoctorDashboard = () => {
               </div>
             )}
 
-            {/* PAGINATION */}
+            {/* Pagination */}
             {!loading && filteredAllAppointments.length > 0 && (
-              <div className="w-full flex items-center justify-center gap-2 mt-8">
+              <div className="w-full flex items-center justify-center gap-3 mt-8">
                 <button
-                  className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  type="button"
                   onClick={handleDecrement}
                   disabled={count === 1}
+                  aria-label="Previous page"
+                  className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
                   ←
                 </button>
@@ -933,9 +761,11 @@ const DoctorDashboard = () => {
                 </div>
 
                 <button
-                  className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  type="button"
                   onClick={handleIncrement}
                   disabled={count >= totalPages}
+                  aria-label="Next page"
+                  className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
                   →
                 </button>

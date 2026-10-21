@@ -108,7 +108,7 @@ const Appointment = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "https://medicare-backend-hajh.onrender.com/api/appointment",
+        "http://localhost:5000/api/appointment",
         formData,
         {
           headers: {

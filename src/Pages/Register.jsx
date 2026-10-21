@@ -39,7 +39,7 @@ const Register = () => {
       formdata1.append("image", file);
 
       const response = await axios.post(
-        "https://medicare-backend-hajh.onrender.com/api/createRegister",
+        "http://localhost:5000/api/createRegister",
         formdata1,
       );
       // alert(response.data.message);
@@ -54,7 +54,7 @@ const Register = () => {
   };
 
   // const handleClick = () => {
-  //   axios.post("https://medicare-backend-hajh.onrender.com/api/createRegister",formData)
+  //   axios.post("http://localhost:5000/api/createRegister",formData)
   //   .then((res)=>{
   //     console.log(res.formData)
 

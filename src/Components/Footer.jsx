@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { MapPinCheck,Phone,Mail } from "lucide-react";
-
+import { MapPinCheck, Phone, Mail } from "lucide-react";
+import logo from "../assets/logo.png";
 
 const Footer = () => {
   return (
@@ -9,8 +9,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
           <div>
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl shadow-lg">
-                🏥
+              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden p-1">
+                <img
+                  src={logo}
+                  alt="MedicareLogo"
+                  className="w-full h-full object-contain"
+                />
               </div>
 
               <div>
@@ -129,7 +133,7 @@ const Footer = () => {
             <div className="space-y-5">
               <div className="flex gap-4">
                 <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-800 flex items-center justify-center">
-                  <MapPinCheck/>
+                  <MapPinCheck />
                 </div>
 
                 <div>
@@ -143,7 +147,7 @@ const Footer = () => {
 
               <div className="flex gap-4">
                 <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-800 flex items-center justify-center">
-                  <Phone/>
+                  <Phone />
                 </div>
 
                 <div>
@@ -160,7 +164,7 @@ const Footer = () => {
 
               <div className="flex gap-4">
                 <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-800 flex items-center justify-center">
-                  <Mail/>
+                  <Mail />
                 </div>
 
                 <div>

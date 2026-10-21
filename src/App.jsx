@@ -19,7 +19,7 @@ import DoctorDashboard from "./Docter/DoctorDashboard";
 import DoctorPatients from "./Docter/DoctorPatients";
 import DoctorProfile from "./Docter/DoctorProfile";
 import DoctorProtectedRoute from "./Components/DoctorProtectedRoute";
-import DoctorDisease from "./Pages/DoctorDisease";
+import DoctorDisease from "./Docter/DoctorDisease";
 import DiseaseDetails from "./Pages/DiseaseDetails";
 import UserManagement from "./Docter/UserManagement";
 import UserStatusChecker from "./Components/UserStatusChecker";
