@@ -29,7 +29,7 @@ const DoctorPatients = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:5000/api/appointments",
+        "https://medicare-backend-3tkw.onrender.com/api/appointments",
         {
           headers: {
             Authorization: `Bearer ${token}`,
