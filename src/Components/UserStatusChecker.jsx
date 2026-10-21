@@ -25,11 +25,14 @@ const UserStatusChecker = () => {
       }
 
       try {
-        await axios.get("http://localhost:5000/api/user-status", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        await axios.get(
+          "https://medicare-backend-3tkw.onrender.com/api/user-status",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
       } catch (error) {
         // --------------------------------------------------
         // USER HAS BEEN BLOCKED

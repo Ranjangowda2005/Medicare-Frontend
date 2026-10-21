@@ -44,7 +44,7 @@ const DoctorDisease = () => {
   const fetchPendingAppointments = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/appointments?page=1&limit=10",
+        "https://medicare-backend-3tkw.onrender.com/api/appointments?page=1&limit=10",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ const DoctorDisease = () => {
   const fetchDiseases = async (page = count) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/diseases?page=${page}&limit=1`,
+        `https://medicare-backend-3tkw.onrender.com/api/diseases?page=${page}&limit=1`,
       );
 
       if (response.data.success) {
@@ -192,7 +192,7 @@ const DoctorDisease = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:5000/api/disease/${id}`,
+        `https://medicare-backend-3tkw.onrender.com/api/disease/${id}`,
       );
 
       if (response.data.success) {
@@ -258,11 +258,14 @@ const DoctorDisease = () => {
 
       if (editingId) {
         response = await axios.put(
-          `http://localhost:5000/api/disease/${editingId}`,
+          `https://medicare-backend-3tkw.onrender.com/api/disease/${editingId}`,
           data,
         );
       } else {
-        response = await axios.post("http://localhost:5000/api/disease", data);
+        response = await axios.post(
+          "https://medicare-backend-3tkw.onrender.com/api/disease",
+          data,
+        );
       }
 
       if (response.data.success) {

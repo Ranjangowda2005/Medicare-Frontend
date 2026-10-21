@@ -28,13 +28,16 @@ const Contact = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post("http://localhost:5000/api/contact", {
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-      });
+      const response = await axios.post(
+        "https://medicare-backend-3tkw.onrender.com/api/contact",
+        {
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        },
+      );
 
       if (response.data.success) {
         alert("Your message has been sent successfully.");

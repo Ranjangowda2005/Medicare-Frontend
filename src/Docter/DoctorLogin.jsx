@@ -34,7 +34,7 @@ const DoctorLogin = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:5000/api/doctor/login",
+        "https://medicare-backend-3tkw.onrender.com/api/doctor/login",
         formData,
       );
 
@@ -138,10 +138,10 @@ const DoctorLogin = () => {
                 <Link to="" className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-white text-white rounded-2xl flex items-center justify-center text-2xl">
                     <img
-                    src={logo}
-                    alt="MediCare Logo"
-                    className="w-full h-full object-contain"
-                     />
+                      src={logo}
+                      alt="MediCare Logo"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
 
                   <div>
