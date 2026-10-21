@@ -374,7 +374,7 @@ const Navbar = () => {
                   <div className="h-12 w-12 overflow-hidden rounded-xl border-2 border-blue-100 bg-blue-100">
                     {user?.image ? (
                       <img
-                        src={`http://localhost:5000/uploads/${user.image}`}
+                        src={`https://res.cloudinary.com/djmsizzc/image/upload/${user.image}`}
                         alt="Profile"
                         className="h-full w-full object-cover"
                       />
