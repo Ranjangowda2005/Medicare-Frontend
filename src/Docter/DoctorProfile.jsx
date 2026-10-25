@@ -10,7 +10,7 @@ const DoctorProfile = () => {
 
   const doctor = {
     name: "Dr. Joseph",
-    email: "joseph@gmail.com",
+    email: "ranjangowdadidupe@gmail.com",
     specialization: "General Physician",
     qualification: "MBBS, MD",
     experience: "10+ Years",
